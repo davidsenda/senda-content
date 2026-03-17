@@ -34,6 +34,19 @@ function getWeekDates(offset: number): string[] {
   });
 }
 
+function getMonthDates(offset: number): string[] {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + offset;
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  const dates: string[] = [];
+  for (let d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) {
+    dates.push(d.toISOString().split("T")[0]);
+  }
+  return dates;
+}
+
 function formatDateRange(dates: string[]): string {
   if (dates.length === 0) return "";
   const start = new Date(dates[0]);
@@ -43,19 +56,29 @@ function formatDateRange(dates: string[]): string {
 }
 
 export default function PlanificadorPage() {
-  const [view, setView] = useState<ViewType>("semanal");
+  const [view, setView] = useState<ViewType>("mensual");
   const [weekOffset, setWeekOffset] = useState(0);
+  const [monthOffset, setMonthOffset] = useState(0);
   const [planItems, setPlanItems] = useState<PlanItem[]>([]);
   const [piezas, setPiezas] = useState<Pieza[]>([]);
   const [showBandeja, setShowBandeja] = useState(true);
   const [dragPieza, setDragPieza] = useState<string | null>(null);
 
   const weekDates = getWeekDates(weekOffset);
+  const monthDates = getMonthDates(monthOffset);
 
   const loadPlan = () => {
-    const from = weekDates[0];
-    const to = weekDates[6];
-    fetch(`/api/planificador?from=${from}&to=${to}`).then(r => r.json()).then(setPlanItems).catch(() => {});
+    if (view === "semanal") {
+      const from = weekDates[0];
+      const to = weekDates[6];
+      fetch(`/api/planificador?from=${from}&to=${to}`).then(r => r.json()).then(setPlanItems).catch(() => {});
+    } else if (view === "mensual") {
+      const from = monthDates[0];
+      const to = monthDates[monthDates.length - 1];
+      fetch(`/api/planificador?from=${from}&to=${to}`).then(r => r.json()).then(setPlanItems).catch(() => {});
+    } else {
+      fetch("/api/planificador").then(r => r.json()).then(setPlanItems).catch(() => {});
+    }
   };
 
   const loadPiezas = () => {
@@ -64,7 +87,7 @@ export default function PlanificadorPage() {
     }).catch(() => {});
   };
 
-  useEffect(() => { loadPlan(); loadPiezas(); }, [weekOffset]);
+  useEffect(() => { loadPlan(); loadPiezas(); }, [weekOffset, monthOffset, view]);
 
   const assignToDate = async (piezaId: string, date: string) => {
     await fetch("/api/planificador", {
@@ -114,11 +137,13 @@ export default function PlanificadorPage() {
         </div>
 
         <div className="flex items-center gap-3">
-          <span className="text-sm font-medium text-senda-jet">{formatDateRange(weekDates)}</span>
+          <span className="text-sm font-medium text-senda-jet">
+            {view === "mensual" ? new Date(new Date().getFullYear(), new Date().getMonth() + monthOffset).toLocaleDateString("es-ES", { month: "long", year: "numeric" }) : formatDateRange(weekDates)}
+          </span>
           <div className="flex gap-1">
-            <button onClick={() => setWeekOffset(weekOffset - 1)} className="btn-secondary text-sm px-3">←</button>
-            <button onClick={() => setWeekOffset(0)} className="btn-secondary text-sm">Hoy</button>
-            <button onClick={() => setWeekOffset(weekOffset + 1)} className="btn-secondary text-sm px-3">→</button>
+            <button onClick={() => view === "mensual" ? setMonthOffset(monthOffset - 1) : setWeekOffset(weekOffset - 1)} className="btn-secondary text-sm px-3">←</button>
+            <button onClick={() => { setWeekOffset(0); setMonthOffset(0); }} className="btn-secondary text-sm">Hoy</button>
+            <button onClick={() => view === "mensual" ? setMonthOffset(monthOffset + 1) : setWeekOffset(weekOffset + 1)} className="btn-secondary text-sm px-3">→</button>
           </div>
         </div>
       </div>
@@ -235,12 +260,136 @@ export default function PlanificadorPage() {
           )}
 
           {view === "mensual" && (
-            <div className="card text-center py-12 text-senda-teal/40">
-              <p className="text-2xl mb-2">📅</p>
-              <p>Vista mensual próximamente</p>
+            <div className="space-y-4">
+              <MonthlyCalendar
+                dates={monthDates}
+                planItems={planItems}
+                onDrop={(date) => {
+                  if (dragPieza) assignToDate(dragPieza, date);
+                }}
+                onRemove={removePlanItem}
+                dragPieza={dragPieza}
+                canalColors={canalColors}
+              />
             </div>
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+interface MonthlyCalendarProps {
+  dates: string[];
+  planItems: PlanItem[];
+  onDrop: (date: string) => void;
+  onRemove: (id: string) => void;
+  dragPieza: string | null;
+  canalColors: Record<string, string>;
+}
+
+function MonthlyCalendar({
+  dates,
+  planItems,
+  onDrop,
+  onRemove,
+  dragPieza,
+  canalColors,
+}: MonthlyCalendarProps) {
+  const dayLabels = ["LUN", "MAR", "MIÉ", "JUE", "VIE", "SÁB", "DOM"];
+
+  // Group dates into weeks
+  const weeks: string[][] = [];
+  let currentWeek: string[] = [];
+
+  if (dates.length > 0) {
+    const firstDate = new Date(dates[0]);
+    const firstDayOfWeek = firstDate.getDay() === 0 ? 6 : firstDate.getDay() - 1;
+
+    // Add empty slots for days before the month starts
+    for (let i = 0; i < firstDayOfWeek; i++) {
+      currentWeek.push("");
+    }
+
+    for (const date of dates) {
+      currentWeek.push(date);
+      if (currentWeek.length === 7) {
+        weeks.push(currentWeek);
+        currentWeek = [];
+      }
+    }
+
+    // Fill remaining slots
+    while (currentWeek.length > 0 && currentWeek.length < 7) {
+      currentWeek.push("");
+    }
+    if (currentWeek.length > 0) {
+      weeks.push(currentWeek);
+    }
+  }
+
+  const isToday = (date: string) => date === new Date().toISOString().split("T")[0];
+
+  return (
+    <div className="card">
+      <div className="grid grid-cols-7 gap-2 mb-4">
+        {dayLabels.map(day => (
+          <div key={day} className="text-center text-xs font-medium text-senda-teal/60 py-2">
+            {day}
+          </div>
+        ))}
+      </div>
+      <div className="space-y-2">
+        {weeks.map((week, weekIdx) => (
+          <div key={weekIdx} className="grid grid-cols-7 gap-2">
+            {week.map((date, dayIdx) => {
+              const dayItems = date ? planItems.filter(p => p.date === date) : [];
+              const dayNum = date ? new Date(date).getDate() : null;
+              return (
+                <div
+                  key={`${weekIdx}-${dayIdx}`}
+                  onDragOver={e => e.preventDefault()}
+                  onDrop={() => {
+                    if (date) onDrop(date);
+                  }}
+                  className={`min-h-[120px] rounded-lg border-2 transition-colors p-2 ${
+                    !date
+                      ? "bg-senda-light/5 border-transparent"
+                      : isToday(date)
+                      ? "border-senda-yellow bg-senda-yellow/5"
+                      : "border-senda-light/20 bg-white"
+                  } ${dragPieza ? "border-dashed border-senda-teal/30" : ""}`}
+                >
+                  {date && (
+                    <>
+                      <div className="text-sm font-heading font-semibold text-senda-jet mb-1">
+                        {dayNum}
+                      </div>
+                      <div className="space-y-1">
+                        {dayItems.map(item => (
+                          <div
+                            key={item.id}
+                            className={`p-1 rounded text-[9px] bg-senda-beige/50 border-l-2 group relative ${
+                              canalColors[item.pieza?.canal || ""] || "border-l-senda-light"
+                            }`}
+                          >
+                            <p className="font-medium text-senda-text line-clamp-2">{item.pieza?.titulo || "Sin título"}</p>
+                            <button
+                              onClick={() => onRemove(item.id)}
+                              className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 text-senda-red/50 hover:text-senda-red transition-opacity text-xs"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ))}
       </div>
     </div>
   );

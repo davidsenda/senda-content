@@ -3,8 +3,8 @@ import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 
 export const metadata: Metadata = {
-  title: "Senda Impulsa — Content Hub",
-  description: "Tu sistema de contenido. Trabajar mejor para vivir mejor.",
+  title: "Brújula — Marca Personal",
+  description: "Tu brújula de marca personal. Trabajar mejor para vivir mejor.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

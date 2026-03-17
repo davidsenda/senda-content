@@ -6,9 +6,10 @@ import { useState } from "react";
 const navItems = [
   { href: "/dashboard", label: "Panel", icon: "🏠" },
   { href: "/mapa", label: "Mi Mapa", icon: "🗺️", sub: "identidad" },
+  { href: "/espejo", label: "El Espejo", icon: "🪞", sub: "resumen" },
   { type: "divider", label: "Contenido" },
   { href: "/ideas", label: "Ideas", icon: "💡" },
-  { href: "/maestro", label: "Maestro", icon: "🎯" },
+  { href: "/creacion", label: "Creación", icon: "✏️" },
   { href: "/piezas", label: "Piezas", icon: "📝" },
   { href: "/planificador", label: "Planificador", icon: "📅" },
 ];
@@ -25,7 +26,7 @@ export default function Sidebar() {
         <button onClick={() => setMobileOpen(!mobileOpen)} className="mr-3 text-xl">
           ☰
         </button>
-        <span className="font-heading font-semibold text-lg">Senda Impulsa</span>
+        <span className="font-heading font-semibold text-lg">Brújula</span>
       </header>
 
       {/* Mobile overlay */}
@@ -44,7 +45,7 @@ export default function Sidebar() {
         <div className="h-16 flex items-center px-4 border-b border-white/10">
           {!collapsed && (
             <Link href="/dashboard" className="font-heading font-semibold text-lg tracking-tight">
-              Senda Impulsa
+              Brújula
             </Link>
           )}
           <button

@@ -63,7 +63,7 @@ export default function Dashboard() {
               : "No tienes nada planificado para hoy"}
           </p>
           <div className="flex gap-2">
-            <Link href="/maestro" className="btn-primary text-sm">Generar contenido</Link>
+            <Link href="/creacion" className="btn-primary text-sm">Generar contenido</Link>
             <Link href="/planificador" className="btn-secondary text-sm">Ir al planificador</Link>
           </div>
         </div>
@@ -75,7 +75,7 @@ export default function Dashboard() {
           <div className="text-3xl font-heading font-bold text-senda-teal">{stats.ideas}</div>
           <div className="text-sm text-senda-teal/60 mt-1">Ideas</div>
         </Link>
-        <Link href="/maestro" className="card text-center hover:shadow-md transition-shadow">
+        <Link href="/creacion" className="card text-center hover:shadow-md transition-shadow">
           <div className="text-3xl font-heading font-bold text-senda-yellow">{stats.piezas}</div>
           <div className="text-sm text-senda-teal/60 mt-1">Piezas</div>
         </Link>
@@ -95,7 +95,7 @@ export default function Dashboard() {
         <div className="space-y-2">
           {stats.mapaComplete < 100 && (
             <Link href="/mapa" className="block p-3 bg-senda-beige rounded-lg hover:bg-senda-light/30 transition-colors text-sm">
-              📍 Completa tu Mapa de identidad para que el Maestro genere mejor contenido
+              📍 Completa tu Mapa de identidad para que Creación genere mejor contenido
             </Link>
           )}
           {stats.ideas === 0 && (
@@ -104,8 +104,8 @@ export default function Dashboard() {
             </Link>
           )}
           {stats.ideas > 0 && stats.piezas === 0 && (
-            <Link href="/maestro" className="block p-3 bg-senda-beige rounded-lg hover:bg-senda-light/30 transition-colors text-sm">
-              🎯 Genera tu primera pieza de contenido con el Maestro
+            <Link href="/creacion" className="block p-3 bg-senda-beige rounded-lg hover:bg-senda-light/30 transition-colors text-sm">
+              ✏️ Genera tu primera pieza de contenido con Creación
             </Link>
           )}
           {stats.piezas > 0 && stats.planificadas === 0 && (
@@ -113,6 +113,9 @@ export default function Dashboard() {
               📅 Planifica alguna de tus piezas guardadas
             </Link>
           )}
+          <Link href="/espejo" className="block p-3 bg-senda-beige rounded-lg hover:bg-senda-light/30 transition-colors text-sm">
+            🪞 Revisa el resumen de tu marca en El Espejo
+          </Link>
         </div>
       </div>
 
