@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&family=Kode+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --senda-text: #0C1F1E;
+  --senda-jet: #112F31;
+  --senda-teal: #164044;
+  --senda-light: #B8CABE;
+  --senda-contrast: #1C4642;
+  --senda-beige: #F4EFE8;
+  --senda-yellow: #FAB438;
+  --senda-red: #C45252;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--senda-beige);
+  color: var(--senda-text);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Poppins', sans-serif;
+}
+
+.font-mono-senda {
+  font-family: 'Kode Mono', monospace;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--senda-light); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--senda-teal); }
+
+/* Selection */
+::selection { background: var(--senda-yellow); color: var(--senda-jet); }
+
+/* Chip/tag base styles */
+.chip {
+  @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium cursor-pointer transition-all;
+}
+.chip-active {
+  @apply bg-senda-teal text-white;
+}
+.chip-inactive {
+  @apply bg-white text-senda-text hover:bg-senda-light/50;
+}
+
+/* Card */
+.card {
+  @apply bg-white rounded-xl p-5 shadow-sm border border-senda-light/30;
+}
+
+/* Button styles */
+.btn-primary {
+  @apply bg-senda-teal text-white px-5 py-2.5 rounded-lg font-medium hover:bg-senda-jet transition-colors;
+}
+.btn-secondary {
+  @apply bg-white text-senda-teal border border-senda-light px-5 py-2.5 rounded-lg font-medium hover:bg-senda-beige transition-colors;
+}
+.btn-yellow {
+  @apply bg-senda-yellow text-senda-jet px-5 py-2.5 rounded-lg font-medium hover:bg-yellow-400 transition-colors;
+}
